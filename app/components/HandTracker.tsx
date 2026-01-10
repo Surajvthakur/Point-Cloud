@@ -1,0 +1,79 @@
+'use client';
+import { useEffect, useRef } from 'react';
+import { Hands } from '@mediapipe/hands'; // Keep Hands if it works; dynamic if not
+// Remove: import { Camera } from '@mediapipe/camera_utils';
+
+export default function HandTracker() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null); // Add for drawing if needed
+
+  useEffect(() => {
+    let hands: any, camera: any;
+
+    const loadMediaPipe = async () => {
+      const { Hands } = await import('@mediapipe/hands');
+      const { Camera } = await import('@mediapipe/camera_utils');
+      const { drawConnectors, drawLandmarks } = await import('@mediapipe/drawing_utils'); // If using
+
+      hands = new Hands({
+        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+      });
+      hands.setOptions({
+        maxNumHands: 2,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+      });
+
+      hands.onResults((results) => {
+        console.log(
+          'Hands detected:',
+          results.multiHandLandmarks?.length
+        );
+      });
+      
+
+      camera = new Camera(videoRef.current!, {
+        onFrame: async () => {
+          await hands.send({ image: videoRef.current });
+        },
+        width: 640,
+        height: 480,
+      });
+      camera.start();
+    };
+
+    if (typeof window !== 'undefined') {
+      loadMediaPipe();
+    }
+
+    return () => {
+      if (camera) camera.stop();
+      if (hands) hands.close();
+    };
+  }, []);
+
+  return (
+    <>
+     return (
+      <video
+  ref={videoRef}
+  style={{
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 120,
+    zIndex: 20,
+    pointerEvents: 'none'
+  }}
+  autoPlay
+  playsInline
+/>
+
+);
+
+      <canvas ref={canvasRef} />
+    </>
+  );
+}
+    
