@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { Hands } from '@mediapipe/hands'; // Keep Hands if it works; dynamic if not
+import { handState } from '../lib/handstate';
 // Remove: import { Camera } from '@mediapipe/camera_utils';
 
 export default function HandTracker() {
@@ -26,10 +27,31 @@ export default function HandTracker() {
       });
 
       hands.onResults((results) => {
-        console.log(
-          'Hands detected:',
-          results.multiHandLandmarks?.length
-        );
+        if (!results.multiHandLandmarks || !results.multiHandedness) {
+          handState.left.visible = false;
+          handState.right.visible = false;
+          return;
+        }
+      
+        results.multiHandLandmarks.forEach((landmarks, i) => {
+          const handedness = results.multiHandedness[i].label; // "Left" | "Right"
+          const wrist = landmarks[0];
+      
+          // Convert from [0,1] → centered space
+          const x = (wrist.x - 0.5) * 2;
+          const y = -(wrist.y - 0.5) * 2;
+          const z = -wrist.z;
+      
+          const target =
+            handedness === 'Left'
+              ? handState.left
+              : handState.right;
+            const WORLD_SCALE = 1.5;
+            target.position.multiplyScalar(WORLD_SCALE);
+              
+          target.position.set(x, y, z);
+          target.visible = true;
+        });
       });
       
 
@@ -64,7 +86,8 @@ export default function HandTracker() {
     right: 10,
     width: 120,
     zIndex: 20,
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    transform: 'scaleX(-1)'
   }}
   autoPlay
   playsInline

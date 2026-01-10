@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import PointCloud from './PointCloud';
 import HandTracker from './HandTracker';
+import HandSpheres from './HandSpheres';
 
 export default function Scene({ plyURL }: { plyURL: string }) {
   return (
@@ -19,6 +20,7 @@ export default function Scene({ plyURL }: { plyURL: string }) {
       >
         <ambientLight />
         <PointCloud url={plyURL} />
+        <HandSpheres />
         <OrbitControls
           enablePan={true}
           enableRotate={true}
