@@ -12,6 +12,7 @@ export default function PointCloud({ url }: { url: string }) {
 
   const material = new THREE.PointsMaterial({
     size: 0.01,
+    vertexColors: true,
   });
 
   return (
