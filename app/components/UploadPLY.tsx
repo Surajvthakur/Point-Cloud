@@ -10,8 +10,29 @@ export default function UploadPLY({ onLoad }: { onLoad: (url: string) => void })
   }
 
   return (
-    <div style={{ position: 'absolute', zIndex: 10, padding: 20}}>
-      <input type="file" accept=".ply" onChange={handleFile} />
+    <div
+      style={{
+        position: 'absolute',
+        top: 10,
+        left: 10,
+        zIndex: 10,
+        backgroundColor: 'rgba(0, 0, 0, 1)',
+        padding: '10px',
+        borderRadius: '5px',
+      }}
+    >
+      <input
+        type="file"
+        accept=".ply"
+        onChange={handleFile}
+        style={{
+          color: 'white',
+          backgroundColor: 'transparent',
+          border: '1px solid white',
+          padding: '5px',
+          borderRadius: '3px',
+        }}
+      />
     </div>
   );
 }
