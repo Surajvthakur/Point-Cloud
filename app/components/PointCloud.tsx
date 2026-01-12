@@ -43,13 +43,30 @@ export default function PointCloud({ url }: { url: string }) {
   
     return 0;
   }
+  function noHandsVisible() {
+    return !handState.left.visible && !handState.right.visible;
+  }
+  
 
   useFrame(({ clock }) => {
     const time = clock.elapsedTime;
-    const entropy = computeEntropy();
-  
     const posAttr = geometry.attributes.position;
     const pos = posAttr.array as Float32Array;
+  
+    // 🟢 REST MODE — FULL STABILIZATION
+    if (noHandsVisible()) {
+      for (let i = 0; i < pos.length; i += 3) {
+        pos[i]     += (originalPositions[i]     - pos[i])     * 0.2;
+        pos[i + 1] += (originalPositions[i + 1] - pos[i + 1]) * 0.2;
+        pos[i + 2] += (originalPositions[i + 2] - pos[i + 2]) * 0.2;
+      }
+  
+      posAttr.needsUpdate = true;
+      return; // 🔥 STOP HERE — no noise, no force
+    }
+  
+    // 🔴 ACTIVE MODE — ENTROPY + FORCE
+    const entropy = computeEntropy();
   
     for (let i = 0; i < pos.length; i += 3) {
       const ox = originalPositions[i];
@@ -60,7 +77,7 @@ export default function PointCloud({ url }: { url: string }) {
       let y = oy;
       let z = oz;
   
-      // Apply hand force
+      // Hand force
       [handState.left, handState.right].forEach((hand) => {
         if (!hand.visible) return;
   
@@ -69,9 +86,9 @@ export default function PointCloud({ url }: { url: string }) {
         const dz = z - hand.position.z;
   
         const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        const radius = 0.2;
+        const radius = 0.6;
   
-        if (dist < radius) {
+        if (dist > 0 && dist < radius) {
           const strength = (radius - dist) * 0.4;
           x += (dx / dist) * strength;
           y += (dy / dist) * strength;
@@ -79,20 +96,21 @@ export default function PointCloud({ url }: { url: string }) {
         }
       });
   
-      // Entropy noise (chaos)
-      const noise = entropy * 0.2;
+      // Entropy noise
+      const noise = entropy * 0.4;
       x += Math.sin(time + ox * 10) * noise;
       y += Math.cos(time + oy * 10) * noise;
       z += Math.sin(time + oz * 10) * noise;
   
-      // Smooth return to order
-      pos[i]     += (x - pos[i]) * 0.15;
+      // Smooth motion
+      pos[i]     += (x - pos[i])     * 0.15;
       pos[i + 1] += (y - pos[i + 1]) * 0.15;
       pos[i + 2] += (z - pos[i + 2]) * 0.15;
     }
   
     posAttr.needsUpdate = true;
   });
+  
 
   return (
     <points

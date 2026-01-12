@@ -27,9 +27,11 @@ export default function HandTracker() {
       });
 
       hands.onResults((results) => {
+
+        handState.left.visible = false;
+        handState.right.visible = false;
+        
         if (!results.multiHandLandmarks || !results.multiHandedness) {
-          handState.left.visible = false;
-          handState.right.visible = false;
           return;
         }
       
