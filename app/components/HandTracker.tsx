@@ -2,7 +2,8 @@
 import { useEffect, useRef } from 'react';
 import { Hands } from '@mediapipe/hands'; // Keep Hands if it works; dynamic if not
 import { handState } from '../lib/handstate';
-// Remove: import { Camera } from '@mediapipe/camera_utils';
+import { detectGesture } from '../lib/detectGesture';
+import { gestureState } from '../lib/gestureState';
 
 export default function HandTracker() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -27,33 +28,43 @@ export default function HandTracker() {
       });
 
       hands.onResults((results) => {
-
+        // reset
+        gestureState.left = 'NONE';
+        gestureState.right = 'NONE';
+        gestureState.global = 'NONE';
+      
         handState.left.visible = false;
         handState.right.visible = false;
-        
-        if (!results.multiHandLandmarks || !results.multiHandedness) {
-          return;
-        }
+      
+        if (!results.multiHandLandmarks) return;
       
         results.multiHandLandmarks.forEach((landmarks, i) => {
-          const handedness = results.multiHandedness[i].label; // "Left" | "Right"
-          const wrist = landmarks[0];
+          const handedness = results.multiHandedness[i].label;
+          const gesture = detectGesture(landmarks);
       
-          // Convert from [0,1] → centered space
-          const x = (wrist.x - 0.5) * 2;
-          const y = -(wrist.y - 0.5) * 2;
-          const z = -wrist.z;
-      
-          const target =
-            handedness === 'Left'
-              ? handState.left
-              : handState.right;
-            const WORLD_SCALE = 1.5;
-            target.position.multiplyScalar(WORLD_SCALE);
-              
-          target.position.set(x, y, z);
-          target.visible = true;
+          if (handedness === 'Left') {
+            gestureState.left = gesture;
+            handState.left.visible = true;
+          } else {
+            gestureState.right = gesture;
+            handState.right.visible = true;
+          }
         });
+      
+        // 🖐🖐 Two-hand global gestures
+        if (
+          gestureState.left === 'OPEN' &&
+          gestureState.right === 'OPEN'
+        ) {
+          gestureState.global = 'SPREAD';
+        }
+      
+        if (
+          gestureState.left === 'FIST' &&
+          gestureState.right === 'FIST'
+        ) {
+          gestureState.global = 'ORDER';
+        }
       });
       
 

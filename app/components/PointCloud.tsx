@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { useMemo, useRef } from 'react';
 import { handState } from '@/app/lib/handstate';
 import { useFrame } from '@react-three/fiber';
+import { gestureState } from '../lib/gestureState';
 
 export default function PointCloud({ url }: { url: string }) {
   const geometry = useLoader(PLYLoader, url);
@@ -89,7 +90,31 @@ export default function PointCloud({ url }: { url: string }) {
         const radius = 0.6;
   
         if (dist > 0 && dist < radius) {
-          const strength = (radius - dist) * 0.4;
+          let strength = (radius - dist) * 0.4;
+
+          if (
+            gestureState.left === 'PINCH' ||
+            gestureState.right === 'PINCH'
+          ) {
+            strength *= -1.2; // invert force
+          }
+          if (
+            gestureState.left === 'OPEN' ||
+            gestureState.right === 'OPEN'
+          ) {
+            strength *= 1.5;
+          }
+          if (
+            gestureState.left === 'FIST' ||
+            gestureState.right === 'FIST'
+          ) {
+            x -= dx * 0.3;
+            y -= dy * 0.3;
+            z -= dz * 0.3;
+          }
+          
+          
+          
           x += (dx / dist) * strength;
           y += (dy / dist) * strength;
           z += (dz / dist) * strength;
@@ -97,7 +122,7 @@ export default function PointCloud({ url }: { url: string }) {
       });
   
       // Entropy noise
-      const noise = entropy * 0.4;
+      const noise = entropy * 5;
       x += Math.sin(time + ox * 10) * noise;
       y += Math.cos(time + oy * 10) * noise;
       z += Math.sin(time + oz * 10) * noise;
