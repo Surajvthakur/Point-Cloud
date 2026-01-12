@@ -87,7 +87,7 @@ export default function PointCloud({ url }: { url: string }) {
         const dz = z - hand.position.z;
   
         const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        const radius = 0.6;
+        let radius = 0.6;
   
         if (dist > 0 && dist < radius) {
           let strength = (radius - dist) * 0.4;
@@ -96,7 +96,8 @@ export default function PointCloud({ url }: { url: string }) {
             gestureState.left === 'PINCH' ||
             gestureState.right === 'PINCH'
           ) {
-            strength *= -1.2; // invert force
+            strength *= -10; // invert force
+            radius = 5;
           }
           if (
             gestureState.left === 'OPEN' ||
@@ -112,9 +113,7 @@ export default function PointCloud({ url }: { url: string }) {
             y -= dy * 0.3;
             z -= dz * 0.3;
           }
-          
-          
-          
+
           x += (dx / dist) * strength;
           y += (dy / dist) * strength;
           z += (dz / dist) * strength;
