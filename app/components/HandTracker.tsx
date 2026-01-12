@@ -84,7 +84,7 @@ export default function HandTracker() {
     position: 'absolute',
     bottom: 10,
     right: 10,
-    width: 120,
+    width: 20,
     zIndex: 20,
     pointerEvents: 'none',
     transform: 'scaleX(-1)'
@@ -94,7 +94,6 @@ export default function HandTracker() {
 />
 
 );
-
       <canvas ref={canvasRef} />
     </>
   );
