@@ -7,22 +7,43 @@ function dist(a: any, b: any) {
 }
 
 export function detectGesture(landmarks: any[]): Gesture {
-  const thumb = landmarks[4];
-  const index = landmarks[8];
-  const middle = landmarks[12];
-  const wrist = landmarks[0];
-
-  const pinchDist = dist(thumb, index);
-  const palmOpenDist = dist(index, wrist);
-
-  // 🤏 Pinch
-  if (pinchDist < 0.04) return 'PINCH';
-
-  // ✊ Fist (tips close to wrist)
-  if (palmOpenDist < 0.18) return 'FIST';
-
-  // ✋ Open palm
-  if (palmOpenDist > 0.3) return 'OPEN';
-
-  return 'NONE';
-}
+    const thumb = landmarks[4];
+    const index = landmarks[8];
+    const middle = landmarks[12];
+    const ring = landmarks[16];
+    const pinky = landmarks[20];
+    const wrist = landmarks[0];
+  
+    const pinchDist = dist(thumb, index);
+  
+    const indexToWrist = dist(index, wrist);
+    const middleToWrist = dist(middle, wrist);
+    const ringToWrist = dist(ring, wrist);
+    const pinkyToWrist = dist(pinky, wrist);
+  
+    // 🤏 PINCH (HIGHEST PRIORITY)
+    if (pinchDist < 0.07) {
+      return 'PINCH';
+    }
+  
+    // ✊ FIST (ALL FINGERS CLOSE TO WRIST)
+    if (
+      indexToWrist < 0.25 &&
+      middleToWrist < 0.25 &&
+      ringToWrist < 0.25 &&
+      pinkyToWrist < 0.25
+    ) {
+      return 'FIST';
+    }
+  
+    // ✋ OPEN PALM
+    if (
+      indexToWrist > 0.35 &&
+      middleToWrist > 0.35
+    ) {
+      return 'OPEN';
+    }
+  
+    return 'NONE';
+  }
+  

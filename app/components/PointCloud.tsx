@@ -67,7 +67,7 @@ export default function PointCloud({ url }: { url: string }) {
     }
   
     // 🔴 ACTIVE MODE — ENTROPY + FORCE
-    const entropy = computeEntropy();
+    let entropy = 10; // 🔥 disable chaos for now
   
     for (let i = 0; i < pos.length; i += 3) {
       const ox = originalPositions[i];
@@ -79,52 +79,50 @@ export default function PointCloud({ url }: { url: string }) {
       let z = oz;
   
       // Hand force
-      [handState.left, handState.right].forEach((hand) => {
-        if (!hand.visible) return;
-  
-        const dx = x - hand.position.x;
-        const dy = y - hand.position.y;
-        const dz = z - hand.position.z;
-  
-        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        let radius = 0.6;
-  
-        if (dist > 0 && dist < radius) {
-          let strength = (radius - dist) * 0.4;
+      const hand = handState.right;
 
-          if (
-            gestureState.left === 'PINCH' ||
-            gestureState.right === 'PINCH'
-          ) {
-            strength *= -10; // invert force
-            radius = 5;
-          }
-          if (
-            gestureState.left === 'OPEN' ||
-            gestureState.right === 'OPEN'
-          ) {
-            strength *= 1.5;
-          }
-          if (
-            gestureState.left === 'FIST' ||
-            gestureState.right === 'FIST'
-          ) {
-            x -= dx * 0.3;
-            y -= dy * 0.3;
-            z -= dz * 0.3;
-          }
+if (hand.visible) {
+  const dx = x - hand.position.x;
+  const dy = y - hand.position.y;
+  const dz = z - hand.position.z;
 
-          x += (dx / dist) * strength;
-          y += (dy / dist) * strength;
-          z += (dz / dist) * strength;
-        }
-      });
+  const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  const radius = 0.6;
+
+  if (dist > 0 && dist < radius) {
+    let strength = (radius - dist) * 1.2; // TEMP BOOST
+
+
+    // 🤏 PINCH → ATTRACT
+    if (gestureState.right === 'PINCH') {
+      strength *= -1.2;
+    }
+
+    // ✋ OPEN PALM → PUSH
+    if (gestureState.right === 'OPEN') {
+      strength *= 1.5;
+    }
+
+    // ✊ FIST → IMPLODE
+    if (gestureState.right === 'FIST') {
+      x -= dx * 0.8;
+      y -= dy * 0.8;
+      z -= dz * 0.8;
+      
+    }
+
+    x += (dx / dist) * strength;
+    y += (dy / dist) * strength;
+    z += (dz / dist) * strength;
+  }
+}
+
   
       // Entropy noise
-      const noise = entropy * 5;
-      x += Math.sin(time + ox * 10) * noise;
-      y += Math.cos(time + oy * 10) * noise;
-      z += Math.sin(time + oz * 10) * noise;
+      // const noise = entropy * 5;
+      // x += Math.sin(time + ox * 10) * noise;
+      // y += Math.cos(time + oy * 10) * noise;
+      // z += Math.sin(time + oz * 10) * noise;
   
       // Smooth motion
       pos[i]     += (x - pos[i])     * 0.15;

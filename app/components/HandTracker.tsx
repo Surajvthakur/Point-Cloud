@@ -1,86 +1,73 @@
 'use client';
+
 import { useEffect, useRef } from 'react';
-import { Hands } from '@mediapipe/hands'; // Keep Hands if it works; dynamic if not
 import { handState } from '../lib/handstate';
-import { detectGesture } from '../lib/detectGesture';
-import { gestureState } from '../lib/gestureState';
+import { detectGesture } from "../lib/detectGesture";
+import { gestureState } from "../lib/gestureState";
 
 export default function HandTracker() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null); // Add for drawing if needed
 
   useEffect(() => {
-    let hands: any, camera: any;
+    let hands: any;
+    let camera: any;
 
     const loadMediaPipe = async () => {
       const { Hands } = await import('@mediapipe/hands');
       const { Camera } = await import('@mediapipe/camera_utils');
-      const { drawConnectors, drawLandmarks } = await import('@mediapipe/drawing_utils'); // If using
 
       hands = new Hands({
-        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+        locateFile: (file: string) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
       });
+
       hands.setOptions({
-        maxNumHands: 2,
+        maxNumHands: 1, // 🔥 ONE HAND ONLY
         modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.6,
       });
 
       hands.onResults((results) => {
-        // reset
-        gestureState.left = 'NONE';
+        // 🔥 FULL RESET
         gestureState.right = 'NONE';
-        gestureState.global = 'NONE';
-      
-        handState.left.visible = false;
         handState.right.visible = false;
-      
-        if (!results.multiHandLandmarks) return;
-      
-        results.multiHandLandmarks.forEach((landmarks, i) => {
-          const handedness = results.multiHandedness[i].label;
-          const gesture = detectGesture(landmarks);
-      
-          if (handedness === 'Left') {
-            gestureState.left = gesture;
-            handState.left.visible = true;
-          } else {
-            gestureState.right = gesture;
-            handState.right.visible = true;
-          }
-        });
-      
-        // 🖐🖐 Two-hand global gestures
-        if (
-          gestureState.left === 'OPEN' &&
-          gestureState.right === 'OPEN'
-        ) {
-          gestureState.global = 'SPREAD';
+
+        if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+          return;
         }
-      
-        if (
-          gestureState.left === 'FIST' &&
-          gestureState.right === 'FIST'
-        ) {
-          gestureState.global = 'ORDER';
-        }
+
+        // 🔥 USE FIRST HAND ONLY (IGNORE HANDEDNESS)
+        const landmarks = results.multiHandLandmarks[0];
+        const wrist = landmarks[0];
+
+        const gesture = detectGesture(landmarks);
+        console.log('Detected gesture:', gesture);
+
+        // Update RIGHT hand only
+        gestureState.right = gesture;
+        handState.right.visible = true;
+
+        // Update hand position
+        const x = (wrist.x - 0.5) * 2;
+        const y = -(wrist.y - 0.5) * 2;
+        const z = -wrist.z;
+
+        handState.right.position.set(x, y, z).multiplyScalar(1.5);
       });
-      
 
       camera = new Camera(videoRef.current!, {
         onFrame: async () => {
-          await hands.send({ image: videoRef.current });
+          await hands.send({ image: videoRef.current! });
         },
         width: 640,
         height: 480,
       });
+
       camera.start();
     };
 
-    if (typeof window !== 'undefined') {
-      loadMediaPipe();
-    }
+    loadMediaPipe();
 
     return () => {
       if (camera) camera.stop();
@@ -89,26 +76,19 @@ export default function HandTracker() {
   }, []);
 
   return (
-    <>
-     return (
-      <video
-  ref={videoRef}
-  style={{
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-    width: 20,
-    zIndex: 20,
-    pointerEvents: 'none',
-    transform: 'scaleX(-1)'
-  }}
-  autoPlay
-  playsInline
-/>
-
-);
-      <canvas ref={canvasRef} />
-    </>
+    <video
+      ref={videoRef}
+      autoPlay
+      playsInline
+      style={{
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        width: 160,
+        zIndex: 20,
+        pointerEvents: 'none',
+        transform: 'scaleX(-1)', // mirror for user
+      }}
+    />
   );
 }
-    
