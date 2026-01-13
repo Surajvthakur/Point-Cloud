@@ -4,7 +4,7 @@ import { useLoader, useFrame } from '@react-three/fiber';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader';
 import * as THREE from 'three';
 import { useMemo, useRef } from 'react';
-import { handState } from '../lib/handState';
+import { handState } from '../lib/handstate';
 import { gestureState } from '../lib/gestureState';
 import { rotationState } from '../lib/rotationState';
 

@@ -15,7 +15,7 @@ export default function Scene({ plyURL }: { plyURL: string }) {
       >
         <ambientLight intensity={0.5} />
         <PointCloud url={plyURL} />
-        <OrbitControls enableRotate={false} />
+        <OrbitControls enableRotate={true} />
       </Canvas>
     </>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { handState } from '../lib/handState';
+import { handState } from '../lib/handstate';
 import { detectGesture } from '../lib/detectGesture';
 import { gestureState } from '../lib/gestureState';
 import { smoothGesture } from '@/app/lib/gestureSmoother';
@@ -97,7 +97,7 @@ export default function HandTracker() {
         position: 'absolute',
         bottom: 10,
         right: 10,
-        width: 160,
+        width: 10,
         zIndex: 20,
         pointerEvents: 'none',
         transform: 'scaleX(-1)',
