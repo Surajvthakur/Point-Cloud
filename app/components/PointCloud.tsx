@@ -101,7 +101,7 @@ export default function PointCloud({ url }: { url: string }) {
         if (gestureState.right === 'PINCH') {
           radius = 1.5;
           if (dist > 0 && dist < radius) {
-            const strength = (radius - dist) * 0.12;
+            const strength = (radius - dist) * 1;
             x -= (dx / dist) * strength;
             y -= (dy / dist) * strength;
             z -= (dz / dist) * strength;
