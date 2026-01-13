@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { handState } from '@/app/lib/handstate';
 import { gestureState } from '@/app/lib/gestureState';
+import { modelScale } from '@/app/lib/modelScale';
 import * as THREE from 'three';
 
 export default function HandOrbitController() {
@@ -17,6 +18,11 @@ export default function HandOrbitController() {
 
     useFrame(() => {
         const left = handState.left;
+
+        // Scale-adjusted zoom limits
+        const minZoom = 0.5 * modelScale.scaleFactor;
+        const maxZoom = 5 * modelScale.scaleFactor;
+        const zoomSpeed = 0.05 * modelScale.scaleFactor;
 
         // Only control orbit when left hand is visible
         if (!left.visible) {
@@ -59,18 +65,18 @@ export default function HandOrbitController() {
         // Zoom with PINCH gesture on left hand
         if (gestureState.left === 'PINCH') {
             spherical.current.radius = THREE.MathUtils.clamp(
-                spherical.current.radius - 0.05,
-                1.0, // Min zoom
-                10.0 // Max zoom
+                spherical.current.radius - zoomSpeed,
+                minZoom,
+                maxZoom
             );
         }
 
         // Zoom out with FIST gesture on left hand
         if (gestureState.left === 'FIST') {
             spherical.current.radius = THREE.MathUtils.clamp(
-                spherical.current.radius + 0.05,
-                1.0,
-                10.0
+                spherical.current.radius + zoomSpeed,
+                minZoom,
+                maxZoom
             );
         }
 

@@ -7,11 +7,17 @@ import { useMemo, useRef } from 'react';
 import { handState } from '@/app/lib/handstate';
 import { useFrame } from '@react-three/fiber';
 import { gestureState } from '../lib/gestureState';
+import { modelScale } from '../lib/modelScale';
 
 export default function PointCloud({ url }: { url: string }) {
   const geometry = useLoader(PLYLoader, url);
   geometry.computeVertexNormals();
   geometry.center();
+
+  // Compute and set model scale from bounding box
+  useMemo(() => {
+    modelScale.setFromGeometry(geometry);
+  }, [geometry]);
 
   const pointsRef = useRef<THREE.Points>(null!);
 
@@ -21,6 +27,10 @@ export default function PointCloud({ url }: { url: string }) {
     return new Float32Array(pos);
   }, [geometry]);
 
+  // Scale-adjusted radii and strengths
+  const baseRadius = 0.6 * modelScale.scaleFactor;
+  const pinchRadius = 1.5 * modelScale.scaleFactor;
+  const fistRadius = 1.2 * modelScale.scaleFactor;
 
   const material = new THREE.PointsMaterial({
     size: 0.01,
@@ -89,17 +99,17 @@ export default function PointCloud({ url }: { url: string }) {
         const refX = shouldResetFirst ? ox : x;
         const refY = shouldResetFirst ? oy : y;
         const refZ = shouldResetFirst ? oz : z;
-        
+
         const dx = refX - hand.position.x;
         const dy = refY - hand.position.y;
         const dz = refZ - hand.position.z;
 
         const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        let radius = 0.6;
+        let radius = baseRadius;
 
         // PINCH: attract points toward hand (from original position)
         if (gestureState.right === 'PINCH') {
-          radius = 1.5;
+          radius = pinchRadius;
           if (dist > 0 && dist < radius) {
             const strength = (radius - dist) * 1;
             x -= (dx / dist) * strength;
@@ -109,7 +119,7 @@ export default function PointCloud({ url }: { url: string }) {
         }
         // FIST: strongly pull points toward hand (from original position)
         else if (gestureState.right === 'FIST') {
-          radius = 1.2;
+          radius = fistRadius;
           const strength = 0.5;
           if (dist > 0 && dist < radius) {
             x -= dx * strength;
@@ -126,7 +136,7 @@ export default function PointCloud({ url }: { url: string }) {
             z += (dz / dist) * strength;
           }
           // Only add entropy noise when OPEN
-          const noise = entropy * 3;
+          const noise = entropy * 3 * modelScale.scaleFactor;
           x += Math.sin(time + ox * 10) * noise;
           y += Math.cos(time + oy * 10) * noise;
           z += Math.sin(time + oz * 10) * noise;

@@ -4,6 +4,7 @@ import { Hands } from '@mediapipe/hands'; // Keep Hands if it works; dynamic if 
 import { handState } from '../lib/handstate';
 import { detectGesture } from '../lib/detectGesture';
 import { gestureState } from '../lib/gestureState';
+import { modelScale } from '../lib/modelScale';
 
 export default function HandTracker() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -45,10 +46,12 @@ export default function HandTracker() {
           const gesture = detectGesture(landmarks);
 
           // Get palm center (wrist landmark 0) and convert to 3D space
+          // Scale by modelScale.scaleFactor for proper normalization
           const wrist = landmarks[0];
-          const x = -(wrist.x - 0.5) * 4;  // Increased sensitivity (was 2)
-          const y = -(wrist.y - 0.5) * 4;  // Increased sensitivity (was 2)
-          const z = -wrist.z * 4;          // Increased sensitivity (was 2)
+          const scale = modelScale.scaleFactor * 2; // Base multiplier * model scale
+          const x = -(wrist.x - 0.5) * scale;
+          const y = -(wrist.y - 0.5) * scale;
+          const z = -wrist.z * scale;
 
           if (handedness === 'Left') {
             gestureState.left = gesture;
