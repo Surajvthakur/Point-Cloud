@@ -21,7 +21,7 @@ export default function HandTracker() {
         locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
       });
       hands.setOptions({
-        maxNumHands: 2,
+        maxNumHands: 1,
         modelComplexity: 1,
         minDetectionConfidence: 0.5,
         minTrackingConfidence: 0.5,
@@ -32,41 +32,45 @@ export default function HandTracker() {
         gestureState.left = 'NONE';
         gestureState.right = 'NONE';
         gestureState.global = 'NONE';
-      
+
         handState.left.visible = false;
         handState.right.visible = false;
-      
+
         if (!results.multiHandLandmarks) return;
-      
+
         results.multiHandLandmarks.forEach((landmarks, i) => {
-          const handedness = results.multiHandedness[i].label;
+          // MediaPipe labels are mirrored - your right hand shows as "Left"
+          const rawHandedness = results.multiHandedness[i].label;
+          const handedness = rawHandedness === 'Left' ? 'Right' : 'Left';
           const gesture = detectGesture(landmarks);
-      
+
+          // Get palm center (wrist landmark 0) and convert to 3D space
+          const wrist = landmarks[0];
+          const x = (wrist.x - 0.5) * 2;  // Convert 0-1 to -1 to 1
+          const y = -(wrist.y - 0.5) * 2; // Flip Y axis
+          const z = -wrist.z * 2;         // Z depth
+
           if (handedness === 'Left') {
             gestureState.left = gesture;
             handState.left.visible = true;
+            handState.left.position.set(x, y, z);
           } else {
             gestureState.right = gesture;
             handState.right.visible = true;
+            handState.right.position.set(x, y, z);
           }
         });
-      
-        // 🖐🖐 Two-hand global gestures
-        if (
-          gestureState.left === 'OPEN' &&
-          gestureState.right === 'OPEN'
-        ) {
+
+        // 🖐 Right-hand only global gestures
+        if (gestureState.right === 'OPEN') {
           gestureState.global = 'SPREAD';
         }
-      
-        if (
-          gestureState.left === 'FIST' &&
-          gestureState.right === 'FIST'
-        ) {
+
+        if (gestureState.right === 'FIST') {
           gestureState.global = 'ORDER';
         }
       });
-      
+
 
       camera = new Camera(videoRef.current!, {
         onFrame: async () => {
@@ -90,25 +94,24 @@ export default function HandTracker() {
 
   return (
     <>
-     return (
+      return (
       <video
-  ref={videoRef}
-  style={{
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-    width: 20,
-    zIndex: 20,
-    pointerEvents: 'none',
-    transform: 'scaleX(-1)'
-  }}
-  autoPlay
-  playsInline
-/>
+        ref={videoRef}
+        style={{
+          position: 'absolute',
+          bottom: 10,
+          right: 10,
+          width: 20,
+          zIndex: 20,
+          pointerEvents: 'none',
+          transform: 'scaleX(-1)'
+        }}
+        autoPlay
+        playsInline
+      />
 
-);
+      );
       <canvas ref={canvasRef} />
     </>
   );
 }
-    
