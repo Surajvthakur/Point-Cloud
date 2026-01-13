@@ -5,14 +5,17 @@ import { OrbitControls } from '@react-three/drei';
 import PointCloud from './PointCloud';
 import HandTracker from './HandTracker';
 import HandSpheres from './HandSpheres';
+import HandOrbitController from './HandOrbitController';
 
 export default function Scene({ plyURL }: { plyURL: string }) {
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <HandTracker />
       <Canvas
-        style={{ width: '100%', height: '100%',position: 'absolute',
-          inset: 0,  }}
+        style={{
+          width: '100%', height: '100%', position: 'absolute',
+          inset: 0,
+        }}
         camera={{ position: [0, 0, 3], fov: 60 }}
         onCreated={({ camera }) => {
           camera.lookAt(0, 0, 0);
@@ -21,6 +24,7 @@ export default function Scene({ plyURL }: { plyURL: string }) {
         <ambientLight />
         <PointCloud url={plyURL} />
         <HandSpheres />
+        <HandOrbitController />
         <OrbitControls
           enablePan={true}
           enableRotate={true}
