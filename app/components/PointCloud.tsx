@@ -70,7 +70,7 @@ export default function PointCloud({ url }: { url: string }) {
   return (
     <points ref={pointsRef}>
       <bufferGeometry attach="geometry" {...geometry} />
-      <pointsMaterial size={0.01} color="white" />
+      <pointsMaterial size={0.01} vertexColors = {true} />
     </points>
   );
 }
