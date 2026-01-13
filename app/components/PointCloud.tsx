@@ -110,10 +110,11 @@ export default function PointCloud({ url }: { url: string }) {
         // FIST: strongly pull points toward hand (from original position)
         else if (gestureState.right === 'FIST') {
           radius = 1.2;
+          const strength = 0.5;
           if (dist > 0 && dist < radius) {
-            x -= dx * 0.08;
-            y -= dy * 0.08;
-            z -= dz * 0.08;
+            x -= dx * strength;
+            y -= dy * strength;
+            z -= dz * strength;
           }
         }
         // OPEN: push points away + add chaos (works on current chaotic state)

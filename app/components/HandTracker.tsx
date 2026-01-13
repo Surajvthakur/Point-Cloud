@@ -46,7 +46,7 @@ export default function HandTracker() {
 
           // Get palm center (wrist landmark 0) and convert to 3D space
           const wrist = landmarks[0];
-          const x = (wrist.x - 0.5) * 2;  // Convert 0-1 to -1 to 1
+          const x = -(wrist.x - 0.5) * 2;  // Convert 0-1 to -1 to 1
           const y = -(wrist.y - 0.5) * 2; // Flip Y axis
           const z = -wrist.z * 2;         // Z depth
 
