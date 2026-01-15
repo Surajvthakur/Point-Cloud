@@ -51,7 +51,7 @@ export default function PointCloud({ url }: { url: string }) {
           // PINCH effect
           float pinchRadius = 1.5;
           if (dist > 0.0 && dist < pinchRadius) {
-            float strength = (pinchRadius - dist) * 1.0 * uPinchStrength;
+            float strength = (pinchRadius - dist) * 2.0 * uPinchStrength;
             vec3 dir = normalize(pos - uHandPosition);
             pos -= dir * strength;
           }
