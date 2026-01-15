@@ -42,6 +42,7 @@ export default function PointCloud({ url }: { url: string }) {
 
         attribute vec3 aOriginalPosition;
         varying vec3 vColor;
+        varying float vGlow;
 
         void main() {
           vColor = color;
@@ -71,6 +72,11 @@ export default function PointCloud({ url }: { url: string }) {
             pos += dir * strength;
           }
 
+          // Interaction Halo calculation
+          float interactionRange = 2.0;
+          float halo = 1.0 - smoothstep(0.0, interactionRange, dist);
+          vGlow = halo * (uPinchStrength + uFistStrength + uOpenStrength);
+
           // Entropy noise
           float noise = uEntropy * 3.0;
           pos.x += sin(uTime + aOriginalPosition.x * 10.0) * noise;
@@ -84,13 +90,26 @@ export default function PointCloud({ url }: { url: string }) {
       `,
       fragmentShader: `
         varying vec3 vColor;
+        varying float vGlow;
+
         void main() {
-          if (length(gl_PointCoord - vec2(0.5)) > 0.5) discard;
-          gl_FragColor = vec4(vColor, 1.0);
+          float dist = length(gl_PointCoord - vec2(0.5));
+          if (dist > 0.5) discard;
+
+          // Soft circle shape
+          float alpha = smoothstep(0.5, 0.4, dist);
+          
+          // Boost color and alpha near interaction
+          vec3 finalColor = vColor + (vec3(1.0) * vGlow * 0.5);
+          float finalAlpha = alpha * (0.8 + vGlow * 0.2);
+
+          gl_FragColor = vec4(finalColor, finalAlpha);
         }
       `,
       vertexColors: true,
       transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
   }, [geometry]);
 
