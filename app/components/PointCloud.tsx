@@ -133,7 +133,7 @@ export default function PointCloud({ url }: { url: string }) {
           // Blend toward Neon Cyan and Hot Pink based on intensity
           vec3 electricBlue = vec3(0.0, 0.7, 1.5);
           vec3 lime = vec3(0.5, 1.5, 0.0);
-          vec3 chromatic = mix(electricBlue, lime, sin(vIntensity * 3.14) * 0.5 + 0.5);
+          vec3 chromatic = mix(lime, electricBlue, sin(vIntensity * 3.14) * 0.5 + 0.5);
           
           vec3 finalColor = mix(vColor, chromatic, vGlow * 0.7);
           finalColor += vec3(1.0) * vGlow * 0.4; // Core highlight
@@ -143,7 +143,7 @@ export default function PointCloud({ url }: { url: string }) {
       `,
       vertexColors: true,
       transparent: true,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
       depthWrite: false,
     });
   }, [geometry]);
