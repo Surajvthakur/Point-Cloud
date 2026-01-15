@@ -151,13 +151,13 @@ export default function PointCloud({ url }: { url: string }) {
           vec3 finalColor = mix(vColor, chromatic, vGlow * 0.7);
           finalColor += vec3(1.0) * vGlow * 0.4; // Core highlight
 
-          gl_FragColor = vec4(finalColor, alpha * (0.8 + vGlow * 0.2));
+          gl_FragColor = vec4(finalColor, 1.0);
         }
       `,
       vertexColors: true,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
+      transparent: false,
+      blending: THREE.NormalBlending,
+      depthWrite: true,
     });
   }, [geometry]);
 
