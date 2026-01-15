@@ -50,9 +50,10 @@ export default function PointCloud({ url }: { url: string }) {
           
           // PINCH effect
           float pinchRadius = 1.5;
-          if (dist < pinchRadius) {
-            float strength = (pinchRadius - dist) * 0.5 * uPinchStrength;
-            pos = mix(pos, uHandPosition, strength);
+          if (dist > 0.0 && dist < pinchRadius) {
+            float strength = (pinchRadius - dist) * 1.0 * uPinchStrength;
+            vec3 dir = normalize(pos - uHandPosition);
+            pos -= dir * strength;
           }
 
           // FIST effect
@@ -64,20 +65,20 @@ export default function PointCloud({ url }: { url: string }) {
 
           // OPEN effect
           float openRadius = 0.6;
-          if (dist < openRadius) {
+          if (dist > 0.0 && dist < openRadius) {
             float strength = (openRadius - dist) * 0.6 * uOpenStrength;
             vec3 dir = normalize(pos - uHandPosition);
             pos += dir * strength;
           }
 
-          // Entropy noise (only during OPEN or general entropy)
-          float noise = uEntropy * 2.0;
+          // Entropy noise
+          float noise = uEntropy * 3.0;
           pos.x += sin(uTime + aOriginalPosition.x * 10.0) * noise;
           pos.y += cos(uTime + aOriginalPosition.y * 10.0) * noise;
           pos.z += sin(uTime + aOriginalPosition.z * 10.0) * noise;
 
           vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-          gl_PointSize = 4.0 * (1.0 / -mvPosition.z);
+          gl_PointSize = 6.0 * (1.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
         }
       `,
