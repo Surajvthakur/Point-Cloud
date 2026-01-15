@@ -56,19 +56,19 @@ export default function HandOrbitController() {
             Math.PI - 0.1 // Max (near bottom)
         );
 
-        // Zoom with PINCH gesture on left hand
+        // Zoom OUT with PINCH gesture on left hand
         if (gestureState.left === 'PINCH') {
             spherical.current.radius = THREE.MathUtils.clamp(
-                spherical.current.radius - 0.05,
+                spherical.current.radius + 0.05,
                 1.0, // Min zoom
                 10.0 // Max zoom
             );
         }
 
-        // Zoom out with FIST gesture on left hand
+        // Zoom IN with FIST gesture on left hand
         if (gestureState.left === 'FIST') {
             spherical.current.radius = THREE.MathUtils.clamp(
-                spherical.current.radius + 0.05,
+                spherical.current.radius - 0.05,
                 1.0,
                 10.0
             );
